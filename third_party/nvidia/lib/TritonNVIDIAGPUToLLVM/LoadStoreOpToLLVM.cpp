@@ -552,7 +552,7 @@ struct AtomicCASOpConversion
                   ConversionPatternRewriter &rewriter) const override {
     auto loc = op.getLoc();
     insertAtomicOrderingBarriers(op, op.getSem(),
-                                 !op->hasAttr("allocation.offset"), rewriter,
+                                 !atomicResultHasOrderingBarrier(op), rewriter,
                                  targetInfo);
     auto b = TritonLLVMOpBuilder(loc, rewriter);
     Value llPtr = adaptor.getPtr();
@@ -673,7 +673,7 @@ public:
                   ConversionPatternRewriter &rewriter) const override {
     auto loc = op.getLoc();
     insertAtomicOrderingBarriers(op, op.getSem(),
-                                 !op->hasAttr("allocation.offset"), rewriter,
+                                 !atomicResultHasOrderingBarrier(op), rewriter,
                                  targetInfo);
     auto b = TritonLLVMOpBuilder(loc, rewriter);
     MLIRContext *ctx = rewriter.getContext();

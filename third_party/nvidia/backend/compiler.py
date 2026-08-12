@@ -241,6 +241,7 @@ class CUDAOptions:
     arch: str = None
     instrumentation_mode: str = ""
     fpsan_homomorphic_casts: bool = False
+    min_shared_mem: Optional[int] = None
 
     early_tma_store_lowering: Optional[None] = None
     tma_store_pipelining: Optional[bool] = None
@@ -380,6 +381,12 @@ class CUDABackend(BaseBackend):
 
         if "enable_fp_fusion" not in args:
             args["enable_fp_fusion"] = knobs.language.default_fp_fusion
+
+        if "gsan" in args.get("instrumentation_mode", ""):
+            from triton.runtime.driver import driver
+            device = driver.active.get_current_device()
+            device_max = driver.active.utils.get_device_properties(device)["max_shared_mem"]
+            args["min_shared_mem"] = max(args.get("min_shared_mem", 0), device_max)
 
         args["max_num_imprecise_acc_default"] = 2**30 if capability == 90 else 0
 
@@ -1265,6 +1272,8 @@ class CUDABackend(BaseBackend):
             options.enable_tree_reduction,
         )
         nvidia.passes.ttnvgpuir.add_initialize_ws_cluster_barriers(pm, capability, ptx_version)
+        if options.min_shared_mem is not None:
+            nvidia.passes.ttgpuir.add_set_minimum_shared_memory(pm, options.min_shared_mem)
         passes.ttgpuir.add_canonicalize_llvm_ir(pm)
         passes.common.add_cse(pm)
         # Meta Triton divergence: upstream #9535 ("Re-order WS lowering and NVGPU
