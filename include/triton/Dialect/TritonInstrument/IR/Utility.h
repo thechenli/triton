@@ -250,6 +250,9 @@ struct AuxDataMap {
   // packed descriptors and an optional alias expansion matrix.
   // tensor, <B x B x i1>
   RegionToValueMap aliasMatrices[numMemTypes];
+  // Shared-memory state lanes occupied by each physical mbarrier. Virtual
+  // cluster barriers have no storage and therefore do not appear here.
+  SmallVector<llvm::SmallBitVector> barrierBufferMasks;
 
   // scratch pointer, i32
   // Shared-cluster lock used to serialize ConSan instrumentation updates.
