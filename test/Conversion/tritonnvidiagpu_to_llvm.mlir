@@ -1227,8 +1227,9 @@ module attributes {"ttg.num-ctas" = 2 : i32, "ttg.num-warps" = 4 : i32, ttg.shar
   tt.func @cluster_barrier_inside_warp_specialize() {
     ttg.warp_specialize()
     default {
-      // CHECK: nvvm.barrier
+      // CHECK-NOT: nvvm.barrier
       // CHECK: %[[COUNTER:.*]] = llvm.load
+      // CHECK-NEXT: nvvm.barrier
       // CHECK: %[[BARRIER_IDX:.*]] = llvm.and %[[COUNTER]]
       // CHECK: %[[PARITY:.*]] = llvm.lshr %[[COUNTER]]
       // CHECK: %[[BARRIER:.*]] = llvm.getelementptr %{{.*}}[%[[BARRIER_IDX]]]
@@ -1238,10 +1239,11 @@ module attributes {"ttg.num-ctas" = 2 : i32, "ttg.num-warps" = 4 : i32, ttg.shar
       // CHECK-NOT: mapa
       // CHECK: mbarrier.arrive.release.cluster.shared::cluster.b64
       // CHECK: mbarrier.try_wait.parity.acquire.cluster.shared::cta.b64
+      // CHECK-NOT: nvvm.barrier
       // CHECK: %[[NEXT_COUNTER:.*]] = llvm.add %[[COUNTER]]
       // CHECK: llvm.and %[[NEXT_COUNTER]]
       // CHECK: st.shared.b32
-      // CHECK: nvvm.barrier
+      // CHECK-NEXT: nvvm.barrier
       ttng.cluster_barrier
       ttg.warp_yield
     }
@@ -1290,6 +1292,10 @@ module attributes {"ttg.num-ctas" = 4 : i32, "ttg.num-warps" = 4 : i32, ttg.shar
   // CHECK: nvvm.barrier
   // RUBIN-LABEL: @cluster_barrier_inside_warp_specialize_rubin
   // RUBIN-COUNT-2: mbarrier.init.shared::cta.b64 [$1], 3;
+  // RUBIN: nvvm.cluster.wait
+  // RUBIN-NOT: nvvm.barrier
+  // RUBIN: %[[RUBIN_COUNTER:.*]] = llvm.load
+  // RUBIN-NEXT: nvvm.barrier
   // RUBIN: %[[CTA:.*]] = nvvm.read.ptx.sreg.cluster.ctarank
   // RUBIN-DAG: %[[ALL_CTAS:.*]] = llvm.mlir.constant(15 : i32) : i32
   // RUBIN-DAG: %[[SELF_MASK:.*]] = llvm.shl %{{.*}}, %[[CTA]] : i32
@@ -1302,6 +1308,11 @@ module attributes {"ttg.num-ctas" = 4 : i32, "ttg.num-warps" = 4 : i32, ttg.shar
   // RUBIN-PTX87: %[[ARRIVE_PRED:.*]] = llvm.icmp "ult"
   // RUBIN-PTX87-COUNT-1: mbarrier.arrive.release.cluster.shared::cluster.b64
   // RUBIN-PTX87-NOT: multicast::cluster::32b
+  // RUBIN-NOT: nvvm.barrier
+  // RUBIN: %[[RUBIN_NEXT_COUNTER:.*]] = llvm.add %[[RUBIN_COUNTER]]
+  // RUBIN: llvm.and %[[RUBIN_NEXT_COUNTER]]
+  // RUBIN: st.shared::cta.b32
+  // RUBIN-NEXT: nvvm.barrier
   tt.func @cluster_barrier_inside_warp_specialize_rubin() {
     ttg.warp_specialize()
     default {
