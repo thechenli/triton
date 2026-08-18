@@ -8912,7 +8912,7 @@ def test_libdevice_rint(dtype_str, device):
         -float("inf"),
         float("nan"),
     ])
-    x_np = np.concatenate((x0_np, x1_np, x2_np))
+    x_np = np.concatenate((x0_np, x1_np, x2_np)).astype(dtype_str)
     x_tri = to_triton(x_np, device=device, dst_type=dtype_str)
 
     @triton.jit
