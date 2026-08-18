@@ -112,7 +112,6 @@ bool isFp4Padded(MemDescType operand) {
   return false;
 }
 
-
 int getScaleFactor(Type scaleType, int blockK) {
   auto shapedType = cast<ShapedType>(scaleType);
   int64_t scaleCols = shapedType.getShape().back();
@@ -516,16 +515,13 @@ struct DotConversion {
   GetInstOperandsFn getInstOperands;
 };
 
-LogicalResult convertDotImpl(const LLVMTypeConverter &typeConverter,
-                             ConversionPatternRewriter &rewriter, Location loc,
-                             Value a, Value b, Value loadedA, Value loadedB,
-                             MemDescType dTensorTy, Value loadedD,
-                             Value useDFlag, Value pred, ValueRange barriers,
-                             ValueRange barrierPreds, bool twoCTAs,
-                             bool tlxPairedMMA, ValueRange commitDescs,
-                             bool lessRegMMA,
-                             const ttng::TargetFeatures &targetFeatures,
-                             const DotConversion &op) {
+LogicalResult convertDotImpl(
+    const LLVMTypeConverter &typeConverter, ConversionPatternRewriter &rewriter,
+    Location loc, Value a, Value b, Value loadedA, Value loadedB,
+    MemDescType dTensorTy, Value loadedD, Value useDFlag, Value pred,
+    ValueRange barriers, ValueRange barrierPreds, bool twoCTAs,
+    bool tlxPairedMMA, ValueRange commitDescs, bool lessRegMMA,
+    const ttng::TargetFeatures &targetFeatures, const DotConversion &op) {
   auto tb = TritonLLVMOpBuilder(loc, rewriter);
   auto dLoader = DotOpMmaV5TmemLoader::build(
       loc, rewriter, dTensorTy, loadedD, dTensorTy.getElementTypeBitWidth());
@@ -807,12 +803,12 @@ LogicalResult convertDot(const LLVMTypeConverter &typeConverter,
             {}};
   };
 
-  return convertDotImpl(
-      typeConverter, rewriter, loc, op.getA(), op.getB(), adaptor.getA(),
-      adaptor.getB(), dTensorTy, adaptor.getD(), adaptor.getUseD(),
-      adaptor.getPred(), adaptor.getBarriers(), adaptor.getBarrierPreds(),
-      twoCTAs, tlx::tlxEnablePairedMMA(op), commitDescs,
-      hasLessRegMMA(op), targetFeatures, dot);
+  return convertDotImpl(typeConverter, rewriter, loc, op.getA(), op.getB(),
+                        adaptor.getA(), adaptor.getB(), dTensorTy,
+                        adaptor.getD(), adaptor.getUseD(), adaptor.getPred(),
+                        adaptor.getBarriers(), adaptor.getBarrierPreds(),
+                        twoCTAs, tlx::tlxEnablePairedMMA(op), commitDescs,
+                        hasLessRegMMA(op), targetFeatures, dot);
 }
 
 int64_t getFormatBitSize(ScaleDotElemType type) {

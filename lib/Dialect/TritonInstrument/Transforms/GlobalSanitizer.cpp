@@ -166,7 +166,8 @@ getMBarrierArrivals(Operation *op, OpBuilder &builder) {
       // Base lacks getMulticastCTA; ctaMask is the equivalent mask.
       multicastMasks.push_back(static_cast<int32_t>(arrive.getCtaMask()));
       multicast = true;
-    } else if (std::optional<uint32_t> fromCTA = std::nullopt; // Base lacks fromCTA, treated as absent.
+    } else if (std::optional<uint32_t> fromCTA =
+                   std::nullopt; // Base lacks fromCTA, treated as absent.
                fromCTA && *fromCTA != static_cast<uint32_t>(numCTAs - 1)) {
       uint32_t broadcastMask = ~*fromCTA & (numCTAs - 1);
       multicastMasks.push_back(broadcastMask);
@@ -185,7 +186,8 @@ getMBarrierArrivals(Operation *op, OpBuilder &builder) {
     SmallVector<int32_t> multicastMasks;
     bool multicast = false;
     int32_t sourceBroadcastMask = 0;
-    if (std::optional<uint32_t> fromCTA = std::nullopt; // Base lacks fromCTA, treated as absent.
+    if (std::optional<uint32_t> fromCTA =
+            std::nullopt; // Base lacks fromCTA, treated as absent.
         fromCTA && *fromCTA != static_cast<uint32_t>(numCTAs - 1)) {
       uint32_t broadcastMask = ~*fromCTA & (numCTAs - 1);
       multicastMasks.push_back(broadcastMask);

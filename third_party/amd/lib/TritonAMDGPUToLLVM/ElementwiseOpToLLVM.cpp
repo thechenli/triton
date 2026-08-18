@@ -17,12 +17,12 @@
 using namespace mlir;
 
 using mlir::getElementTypeOrSelf;
+using mlir::triton::amdgpu::ISAFamily;
 using mlir::triton::gpu::appendOrGetExternFuncOp;
 using mlir::triton::gpu::ElementwiseOpConversion;
 using mlir::triton::gpu::ElementwiseOpConversionBase;
 using mlir::triton::gpu::getFunctionType;
 using mlir::triton::gpu::MultipleOperandsRange;
-using mlir::triton::amdgpu::ISAFamily;
 
 namespace {
 

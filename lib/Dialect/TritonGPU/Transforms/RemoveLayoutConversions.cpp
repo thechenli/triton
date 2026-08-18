@@ -2374,10 +2374,9 @@ void LayoutRematerialization::hoistConvertOnTopOfExtOrBroadcast(
     bool disableRematSplitting) {
   runHoistConvertPass([&](ConvertLayoutOp convertOp) {
     return hoistConvertOnTopOfExtOrBroadcast(convertOp, /*forceHoist=*/false,
-                                           disableRematSplitting);
+                                             disableRematSplitting);
   });
 }
-
 
 void LayoutRematerialization::hoistConvertOnTopOfExtOrBroadcast(
     const DenseSet<Operation *> *forceHoists) {
