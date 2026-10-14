@@ -62,7 +62,8 @@ module attributes {"ttg.instrumentation_mode" = "gsan", "ttg.num-ctas" = 2 : i32
   // CHECK: %[[CTA_RANK_INIT:.*]] = nvg.cluster_id
   // CHECK: %[[INIT_SCRATCH:.*]] = llvm.addrspacecast %[[SCRATCH]] : !llvm.ptr<1> to !llvm.ptr
   // CHECK: llvm.call @__triton_gsan_cluster_barrier_init(%[[INIT_SCRATCH]], %{{.*}}) : (!llvm.ptr, i32) -> ()
-  // CHECK: %[[ELECT_SYNC:.*]] = nvvm.elect.sync -> i1
+  // fbtriton base reuses the init elect (dedup); check the reuse wiring via llvm.and
+  // CHECK: %{{.*}} = llvm.and %{{.*}}, %[[ELECT_INIT]] : i1
   // CHECK: %[[CTA_RANK_SYNC:.*]] = nvg.cluster_id
   // CHECK: %[[SYNC_SCRATCH:.*]] = llvm.addrspacecast %[[SCRATCH]] : !llvm.ptr<1> to !llvm.ptr
   // CHECK: %[[TWO:.*]] = llvm.mlir.constant(2 : i32) : i32
@@ -129,7 +130,8 @@ module attributes {"ttg.instrumentation_mode" = "gsan", "ttg.num-ctas" = 4 : i32
   // CHECK: %[[TABLE_ELECT:.*]] = nvvm.elect.sync -> i1
   // CHECK: %[[TABLE_CTA:.*]] = nvg.cluster_id
   // CHECK: llvm.call @__triton_gsan_mbarrier_table_init(%[[TABLE:.*]], %{{.*}}, %{{.*}}) : (!llvm.ptr, i32, i32) -> ()
-  // CHECK: %[[INIT_ELECT:.*]] = nvvm.elect.sync -> i1
+  // fbtriton base reuses the table-init elect (dedup); check the reuse wiring via llvm.and
+  // CHECK: %{{.*}} = llvm.and %{{.*}}, %[[TABLE_ELECT]] : i1
   // CHECK: %[[INIT_LEADER_CTA:.*]] = nvg.cluster_id
   // CHECK: %[[INIT_CTA:.*]] = nvg.cluster_id
   // CHECK: %[[INIT_ADDRESS:.*]] = llvm.ptrtoint %{{.*}} : !llvm.ptr<3> to i32
