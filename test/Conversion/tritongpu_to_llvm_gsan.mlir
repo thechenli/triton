@@ -140,7 +140,8 @@ module attributes {"ttg.instrumentation_mode" = "gsan", "ttg.num-ctas" = 4 : i32
   // CHECK: %[[INIT_TABLE:.*]] = llvm.addrspacecast %{{.*}} : !llvm.ptr<1> to !llvm.ptr
   // CHECK: llvm.call @__triton_gsan_mbarrier_init(%[[INIT_TABLE]], %[[INIT_OFFSET]], %{{.*}}, %[[INIT_CTA]], %{{.*}}, %{{.*}}, %{{.*}}) : (!llvm.ptr, i32, i32, i32, i32, !llvm.ptr, i32) -> ()
   // CHECK: %[[ARRIVE_CTA:.*]] = nvg.cluster_id
-  // CHECK: %[[ARRIVE_ELECT:.*]] = nvvm.elect.sync -> i1
+  // fbtriton base reuses the table-init elect (dedup); check the reuse wiring via llvm.and
+  // CHECK: %{{.*}} = llvm.and %{{.*}}, %[[TABLE_ELECT]] : i1
   // CHECK: %[[LEADER_MASK:.*]] = llvm.mlir.constant({{.*}} : i32) : i32
   // CHECK: %[[LEADER_RANK:.*]] = llvm.and %[[ARRIVE_CTA]], %{{.*}} : i32
   // CHECK: %[[ONE:.*]] = llvm.mlir.constant(1 : i32) : i32
@@ -148,8 +149,8 @@ module attributes {"ttg.instrumentation_mode" = "gsan", "ttg.num-ctas" = 4 : i32
   // CHECK: %[[ARRIVE_COUNT:.*]] = llvm.mlir.constant(1 : i32) : i32
   // CHECK-NEXT: %[[PUBLISH:.*]] = llvm.mlir.constant(1 : i32) : i32
   // CHECK-NEXT: llvm.call @__triton_gsan_mbarrier_arrive(%{{.*}}, %{{.*}}, %{{.*}}, %{{.*}}, %[[RECIPIENTS]], %[[ARRIVE_COUNT]], %[[ARRIVE_CTA]], %[[PUBLISH]], %{{.*}}, %{{.*}}) : (!llvm.ptr, !llvm.ptr, i32, i32, i32, i32, i32, i32, !llvm.ptr, i32) -> ()
-  // CHECK: %[[WAIT_ELECT:.*]] = nvvm.elect.sync -> i1
-  // CHECK: %[[WAIT_WARP_ELECT:.*]] = llvm.and %{{.*}}, %[[WAIT_ELECT]] : i1
+  // fbtriton base reuses the table-init elect (dedup); check the reuse wiring via llvm.and
+  // CHECK: %[[WAIT_WARP_ELECT:.*]] = llvm.and %{{.*}}, %[[TABLE_ELECT]] : i1
   // CHECK: %[[WAIT_OP_PRED:.*]] = llvm.and %[[WAIT_WARP_ELECT]], %{{.*}} : i1
   // CHECK: %[[WAIT_LEADER_CTA:.*]] = nvg.cluster_id
   // CHECK: %[[WAIT_LEADER_MASK:.*]] = llvm.mlir.constant(1 : i32) : i32
