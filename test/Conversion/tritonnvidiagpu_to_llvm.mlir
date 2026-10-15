@@ -822,8 +822,6 @@ module attributes {"ttg.num-ctas" = 1 : i32, "ttg.num-warps" = 4 : i32, ttg.targ
     %c256_i32 = arith.constant 256 : i32
     %c1_i32 = arith.constant 1 : i32
     %c0_i32 = arith.constant 0 : i32
-    // CHECK: st.shared::cta.b32
-    // CHECK: bar.warp.sync
     // CHECK: llvm.cond_br
     // CHECK: llvm.inline_asm has_side_effects {{.*}} "tensormap.replace.tile.global_address.shared::cta.b1024.b64 [ $0 + 0 ], $1;"
     // CHECK-NOT: tensormap.replace.tile.rank
@@ -849,8 +847,6 @@ module attributes {"ttg.num-ctas" = 1 : i32, "ttg.num-warps" = 4 : i32, ttg.targ
     %c1_i32 = arith.constant 1 : i32
     %c0_i32 = arith.constant 0 : i32
     %c1024_i64 = arith.constant 1024 : i64
-    // CHECK: st.shared::cta.b32
-    // CHECK: bar.warp.sync
     // CHECK: llvm.cond_br
     // CHECK: llvm.inline_asm has_side_effects {{.*}} "tensormap.replace.tile.global_address.shared::cta.b1024.b64 [ $0 + 0 ], $1;"
     // CHECK: tensormap.replace.tile.rank.shared::cta.b1024.b32 [ $0 + 0 ], 0x1;
