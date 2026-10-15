@@ -4,7 +4,7 @@
 // RUN: triton-opt %s -split-input-file --nvgpu-tma-store-token-wait-lowering --convert-triton-gpu-to-llvm='compute-capability=90 ptx-version=88' --initialize-ws-cluster-barriers='compute-capability=90 ptx-version=88' -reconcile-unrealized-casts | FileCheck --check-prefix=PTX88 %s
 // RUN: triton-opt %s -split-input-file --nvgpu-tma-store-token-wait-lowering --convert-triton-gpu-to-llvm='compute-capability=107 ptx-version=87' --initialize-ws-cluster-barriers='compute-capability=107 ptx-version=87' -reconcile-unrealized-casts | FileCheck --check-prefix=RUBIN-PTX87 %s
 // RUN: triton-opt %s -split-input-file --nvgpu-tma-store-token-wait-lowering --convert-triton-gpu-to-llvm='compute-capability=107 ptx-version=94' --initialize-ws-cluster-barriers='compute-capability=107 ptx-version=94' -reconcile-unrealized-casts | FileCheck --check-prefix=RUBIN %s
-// RUN: triton-opt %s -split-input-file --convert-triton-gpu-to-llvm=compute-capability=90 --initialize-ws-cluster-barriers=compute-capability=90 --canonicalize-llvm-ir -reconcile-unrealized-casts | FileCheck --check-prefix=CLUSTER-MASK %s
+// RUN: triton-opt %s -split-input-file --nvgpu-tma-store-token-wait-lowering --convert-triton-gpu-to-llvm=compute-capability=90 --initialize-ws-cluster-barriers=compute-capability=90 --canonicalize-llvm-ir -reconcile-unrealized-casts | FileCheck --check-prefix=CLUSTER-MASK %s
 
 #shared0 = #ttg.swizzled_shared<{vec = 1, perPhase = 1, maxPhase = 1, order = [0]}>
 #smem = #ttg.shared_memory
