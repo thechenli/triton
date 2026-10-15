@@ -2352,7 +2352,8 @@ void LayoutRematerialization::runHoistConvertPass(
 void LayoutRematerialization::hoistConvertOnTopOfExtOrBroadcast(
     bool disableRematSplitting) {
   runHoistConvertPass([&](ConvertLayoutOp convertOp) {
-    return hoistConvertOnTopOfExtOrBroadcast(convertOp, disableRematSplitting);
+    return hoistConvertOnTopOfExtOrBroadcast(convertOp, /*forceHoist=*/false,
+                                           disableRematSplitting);
   });
 }
 
