@@ -116,7 +116,7 @@ module {
     %c256_i32 = arith.constant 256 : i32
     %c128_i32 = arith.constant 128 : i32
     %c8_i32 = arith.constant 8 : i32
-    %0 = tt.make_tensor_descriptor %arg0, [%c256_i32, %c128_i32], [%c256_i64, %c1_i64] {order = array<i32: 0>} : <bf16>, <1x128xbf16>
+    %0 = tt.make_tensor_descriptor %arg0, [%c256_i32, %c128_i32], [%c256_i64, %c1_i64] {order = array<i32: 0>} : !tt.ptr<bf16>, !tt.tensordesc<1x128xbf16>
     tt.descriptor_scatter %0[%arg3, %c8_i32], %arg4 : !tt.tensordesc<1x128xbf16>, tensor<32xi32>, i32, tensor<32x128xbf16>
     tt.return
   }
