@@ -433,10 +433,10 @@ public:
       return;
 
     ModuleOp mod = getOperation();
-    if (getModuleTwoCTAs(mod)) {
-      assert(false &&
-             "HoistMBarrierLifecyclePass does not handle the two-CTA mode yet");
-    }
+    // Two-CTA mode is not handled yet; skip the pass to preserve pre-pass
+    // behavior instead of asserting.
+    if (getModuleTwoCTAs(mod))
+      return;
 
     int numCTAs = ttg::TritonGPUDialect::getNumCTAs(mod);
     if (numCTAs == 1)
