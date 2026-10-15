@@ -45,7 +45,7 @@ class ElideFullClusterRankMaskPattern : public OpRewritePattern<LLVM::AndOp> {
     if (!rank.getDefiningOp<triton::nvgpu::ClusterCTAIdOp>())
       return failure();
 
-    unsigned numCTAs = triton::gpu::lookupNumCTAs(op);
+    unsigned numCTAs = triton::gpu::lookupPhysicalNumCTAs(op);
     if (mask.countr_one() < llvm::Log2_32_Ceil(numCTAs))
       return failure();
 
