@@ -73,6 +73,7 @@ public:
     // A collectors are part of the baseline tcgen05 ISA (PTX 8.6).
     return computeCapability >= 100 && computeCapability < 120;
   }
+  bool supportsUE5M3Tcgen05MMA() const { return computeCapability == 107; }
   bool supportsReuseB() const { return computeCapability == 107; }
   bool supportsMbarMulticast() const { return computeCapability == 107; }
 
