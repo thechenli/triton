@@ -1311,7 +1311,7 @@ module attributes {"ttg.num-ctas" = 4 : i32, "ttg.num-warps" = 4 : i32, ttg.shar
   // RUBIN-NOT: nvvm.barrier
   // RUBIN: %[[RUBIN_NEXT_COUNTER:.*]] = llvm.add %[[RUBIN_COUNTER]]
   // RUBIN: llvm.and %[[RUBIN_NEXT_COUNTER]]
-  // RUBIN: st.shared::cta.b32
+  // RUBIN: st.shared.b32
   // RUBIN-NEXT: nvvm.barrier
   tt.func @cluster_barrier_inside_warp_specialize_rubin() {
     ttg.warp_specialize()
