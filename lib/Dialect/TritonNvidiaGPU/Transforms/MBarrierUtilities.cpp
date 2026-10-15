@@ -6,6 +6,9 @@
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/SmallVector.h"
 
+#include <cstdint>
+#include <optional>
+
 namespace mlir::triton::nvidia_gpu {
 
 namespace ttg = mlir::triton::gpu;
@@ -44,10 +47,15 @@ bool requiresCrossCTAMBarrierInitSync(
           crossCTA = tma.getMulticast();
         else if (isa<ttng::CLCTryCancelOp, ttng::AsyncSharedStoreOp>(op))
           crossCTA = true;
-        else if (auto expect = dyn_cast<ttng::BarrierExpectOp>(op))
-          crossCTA = expect.getFromCTA().has_value();
-        else if (auto arrive = dyn_cast<ttng::ArriveBarrierOp>(op))
-          crossCTA = arrive.isMulticast() || arrive.getFromCTA().has_value();
+        else if (auto expect = dyn_cast<ttng::BarrierExpectOp>(op)) {
+          // Base lacks getFromCTA; treated as absent (never cross-CTA via this path).
+          std::optional<uint32_t> fromCTA = std::nullopt; // expect.getFromCTA() upstream
+          crossCTA = fromCTA.has_value();
+        } else if (auto arrive = dyn_cast<ttng::ArriveBarrierOp>(op)) {
+          // Base lacks getFromCTA; only multicast via ctaMask is observable.
+          std::optional<uint32_t> fromCTA = std::nullopt; // arrive.getFromCTA() upstream
+          crossCTA = arrive.isMulticast() || fromCTA.has_value();
+        }
 
         return crossCTA && llvm::any_of(user.getBarriers(), aliasesBarrier)
                    ? WalkResult::interrupt()
