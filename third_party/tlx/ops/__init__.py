@@ -53,6 +53,8 @@ from __future__ import annotations
 
 import functools
 
+from torch.compiler import assume_constant_result
+
 from ._catalog import InvalidInput, UnsupportedBackward, UnsupportedOp, check_backward, check_inputs, impl_for
 
 __all__ = [
@@ -505,8 +507,9 @@ def flash_attn_mxfp8(q, k, v, causal=False, sm_scale=None, *, space="full", p_ex
 
     Q, K, V and the softmax probabilities are quantized internally to E4M3
     data with E8M0 scales: per 32x32 block for Q and K, per 32 keys for V and
-    the probabilities. gfx950 quantizes as Blackwell does, but its non-causal
-    kernel computes the probabilities with an approximate exp2 (see
+    the probabilities. gfx950 quantizes as Blackwell does, but its ping-pong
+    kernel (non-causal, and causal at sequence lengths divisible by 512)
+    computes the probabilities with an approximate exp2 (see
     kernels/flash_attn_mxfp8/gfx950.py), and the two agree to within the
     quantization error rather than bitwise. Head dim 128 and sequence lengths
     divisible by 256. Blackwell returns BF16 gradients; gfx950 is forward only.
@@ -585,6 +588,17 @@ def hstu_attn_dev(q, k, v, seq_offsets, max_seq_len, attn_scale, alpha=None, cau
               contextual_seq_len=contextual_seq_len, space=space)
 
 
+_HSTU_CROSS_ATTN_IMPLS = {}
+
+
+@assume_constant_result
+def _hstu_cross_attn_impl_key(device):
+    # Tensor devices have explicit indices. The catalog and device mapping stay fixed during graph reuse.
+    if device not in _HSTU_CROSS_ATTN_IMPLS:
+        _HSTU_CROSS_ATTN_IMPLS[device] = impl_for("hstu_cross_attn", device=device)
+    return device
+
+
 def hstu_cross_attn(q, k, v, seq_offsets, max_seq_len, attn_scale, alpha=None, seq_offsets_q=None, max_q_len=None,
                     num_softmax_heads=0, num_targets=None, causal=False, shared_kv=False, *, space="full"):
     """HSTU cross attention over jagged `q` `(total_q, H, D)` and `k`/`v` `(total_kv, H_kv, D/V)`. Differentiable.
@@ -599,7 +613,8 @@ def hstu_cross_attn(q, k, v, seq_offsets, max_seq_len, attn_scale, alpha=None, s
         raise InvalidInput("tlx.ops.hstu_cross_attn takes seq_offsets_q and max_q_len together")
     if seq_offsets_q is None:
         seq_offsets_q, max_q_len = seq_offsets, max_seq_len
-    fn, spec = impl_for("hstu_cross_attn", device=q.device)
+    # Read from a global cache so Dynamo can guard the callable and catalog specification.
+    fn, spec = _HSTU_CROSS_ATTN_IMPLS[_hstu_cross_attn_impl_key(q.device)]
     check_inputs(spec, dtype=q.dtype, HEAD_DIM=q.shape[-1])
     check_backward(spec, q, k, v)
     import torch
