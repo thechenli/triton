@@ -48,15 +48,10 @@ bool requiresCrossCTAMBarrierInitSync(
         else if (isa<ttng::CLCTryCancelOp, ttng::AsyncSharedStoreOp>(op))
           crossCTA = true;
         else if (auto expect = dyn_cast<ttng::BarrierExpectOp>(op)) {
-          // Base lacks getFromCTA; treated as absent (never cross-CTA via this
-          // path).
-          std::optional<uint32_t> fromCTA =
-              std::nullopt; // expect.getFromCTA() upstream
+          std::optional<uint32_t> fromCTA = expect.getFromCTA();
           crossCTA = fromCTA.has_value();
         } else if (auto arrive = dyn_cast<ttng::ArriveBarrierOp>(op)) {
-          // Base lacks getFromCTA; only multicast via ctaMask is observable.
-          std::optional<uint32_t> fromCTA =
-              std::nullopt; // arrive.getFromCTA() upstream
+          std::optional<uint32_t> fromCTA = arrive.getFromCTA();
           crossCTA = arrive.isMulticast() || fromCTA.has_value();
         }
 
